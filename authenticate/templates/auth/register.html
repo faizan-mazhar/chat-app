@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="container p-5" style="margin-top: auto; margin-bottom: auto;">
+        <div class="col-5" style="margin:auto">
+            <ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" data-mdb-toggle="pill" href="{% url 'login' %}"
+                    aria-controls="pills-login" aria-selected="false">Login</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link active" data-mdb-toggle="pill" href="{% url 'register' %}"
+                    aria-controls="pills-register" aria-selected="true">Register</a>
+                </li>
+              </ul>
+              <div class="tab-content">    
+                <div class="tab-pane fade show active" >
+                  <form action="{% url 'register' %}" method="POST">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="form-outline mb-4">
+                        <label class="form-label" for="registerName">{{field.label}}</label>
+                        {{ field }}
+                        <div class="invalid-feedback" style="display: block">{{ field.errors }}</div>
+                      </div>           
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary btn-block mb-3">Sign in</button>
+                  </form>
+                </div>
+              </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
