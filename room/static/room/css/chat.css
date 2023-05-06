@@ -8,3 +8,13 @@
     border-radius: 15px;
     background-color: rgba(57, 192, 237,.2);
 }
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#chat-log{
+    flex-grow: 1;
+}

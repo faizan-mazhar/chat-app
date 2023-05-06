@@ -1,15 +1,13 @@
-function createMessageElement(message) {
+function createMessageElement(message, userId, currentUserId) {
     /*
         This function creates a new HTML element to represent message.
 
         return: HTML element
     */
     let $containerDiv = $("<div>", {"class": "d-flex flex-row mb-4"});
-    $containerDiv.addClass("justify-content-start");
 
     // text wrapper div
     let $wrapperDiv = $("<div>", {"class": "p-3 me-3 border"});
-    $wrapperDiv.addClass("my-message");
     $containerDiv.append($wrapperDiv);
 
     // text element to show message
@@ -17,5 +15,13 @@ function createMessageElement(message) {
     $textNode.text(message);
     $wrapperDiv.append($textNode);
     
+    // Assign correct CSS classes
+    if(userId === currentUserId) {
+        $containerDiv.addClass("justify-content-start");
+        $wrapperDiv.addClass("my-message");
+    } else {
+        $containerDiv.addClass("justify-content-end");
+        $wrapperDiv.addClass("other-message");
+    }
     return $containerDiv;
 }

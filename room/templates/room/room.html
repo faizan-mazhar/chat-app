@@ -1,100 +1,99 @@
+{% extends "base.html" %}
 {%load static%}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Room: {{room_name}}</title>
-    <link rel="stylesheet" href="{% static 'room/css/chat.css' %}"/>
-    <script src="{% static 'room/js/utils.js' %}"></script>
-</head>
-<body>
-    <section style="background-color: #eee;">
-        <div class="container py-5">
-      
-          <div class="row d-flex justify-content-center">
-            <div class="col-12">
-      
-              <div class="card" style="border-radius: 15px;">
- 
-                <div class="card-body">
-                <div id="chat-log">
-                    <div class="d-flex flex-row justify-content-start mb-4">
-                        <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
-                          <p class="small mb-0">Hello and thank you for visiting MDBootstrap. Please click the video
-                            below.</p>
-                        </div>
-                      </div>
-          
-                      <div class="d-flex flex-row justify-content-end mb-4">
-                        <div class="p-3 me-3 border" style="border-radius: 15px; background-color: #fbfbfb;">
-                          <p class="small mb-0">Thank you, I really like your product.</p>
-                        </div>
-                      
-                      </div>
+
+{% block title %}
+<title>Chat Room: {{room_name}}</title>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'room/css/chat.css' %}"/>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center">
+      <div class="col-12">
+        <div class="card" style="height: 85vh">
+          <div class="card-body d-flex flex-column h-100">
+          <div id="chat-log" style="flex-grow: 1; overflow-y: auto;">
+              <div class="d-flex flex-row justify-content-start mb-4">
+                  <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
+                    <p class="small mb-0">Hello and thank you for visiting MDBootstrap. Please click the video
+                      below.</p>
+                  </div>
+                </div>
     
-                      <div class="d-flex flex-row justify-content-start mb-4">
-                      
-                        <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
-                          <p class="small mb-0">...</p>
-                        </div>
-                      </div>
-                </div> 
-                <div class="input-group">
-                    <input type="text" id="chat-message-input" class="form-control" placeholder="Connecting...." disabled>
-                    <button class="btn btn-outline-secondary" id="chat-message-submit" type="button" disabled>Send</button>
+                <div class="d-flex flex-row justify-content-end mb-4">
+                  <div class="p-3 me-3 border" style="border-radius: 15px; background-color: #fbfbfb;">
+                    <p class="small mb-0">Thank you, I really like your product.</p>
+                  </div>
+                
                 </div>
-      
+
+                <div class="d-flex flex-row justify-content-start mb-4">
+                
+                  <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
+                    <p class="small mb-0">...</p>
+                  </div>
                 </div>
-              </div>
-      
-            </div>
+          </div> 
+          <div class="input-group">
+              <input type="text" id="chat-message-input" class="form-control" placeholder="Connecting...." disabled>
+              <button class="btn btn-outline-secondary" id="chat-message-submit" type="button" disabled>Send</button>
           </div>
-      
+
+          </div>
         </div>
-      </section>
-    <script>
-        const roomName = "{{room_name}}";
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
-        );
-        
-        chatSocket.onopen = function(e) {
-            //Enabled input field and button when websocket connection is established
-            $('#chat-message-input').attr("disabled", false);
-            $('#chat-message-input').attr("placeholder", "Message");
-            $('#chat-message-submit').attr("disabled", false);
+      </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'room/js/utils.js' %}"></script>
+  <script>
+    const userId = "{{user.id}}";
+    const roomName = "{{room_name}}";
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+    
+    chatSocket.onopen = function(e) {
+        //Enabled input field and button when websocket connection is established
+        $('#chat-message-input').attr("disabled", false);
+        $('#chat-message-input').attr("placeholder", "Message");
+        $('#chat-message-submit').attr("disabled", false);
+    }
+  
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const newMessageNode = createMessageElement(data.message, data.id, userId);
+  
+        $("#chat-log").append(newMessageNode);
+        $("#chat-log").animate({ scrollTop: $('#chat-log').prop("scrollHeight")}, 1000);
+    };
+  
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+  
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
         }
-
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const newMessageNode = createMessageElement(data.message);
-
-            $("#chat-log").append(newMessageNode);
-        };
-
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
-
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
-    </script>
-</body>
-</html>
+    };
+  
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'user_id': userId
+        }));
+        messageInputDom.value = '';
+    };
+  </script>  
+{% endblock %}
