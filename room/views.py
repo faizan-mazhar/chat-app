@@ -1,9 +1,10 @@
+import json
 from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 
 from room.forms import ChatRoomForm
-from room.models import ChatRoom
+from room.models import ChatRoom, Message
 
 class SelectRoomView(LoginRequiredMixin, CreateView):
     template_name = 'room/index.html'
@@ -25,5 +26,9 @@ class RoomView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['room_name'] = kwargs['room']
+        room_name = kwargs['room']
+        context['room_name'] =room_name
+        context['messages'] = json.dumps([
+            {"message": message.message, "id": message.sender} for message in Message.objects.filter(room__name=room_name)]
+            )
         return context

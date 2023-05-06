@@ -6,3 +6,9 @@ class ChatRoom(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Message(models.Model):
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    message = models.TextField()
+    sender = models.CharField(max_length=150)
