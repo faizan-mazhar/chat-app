@@ -1,0 +1,10 @@
+
+.other-message {
+    border-radius: 15px;
+    background-color: #fbfbfb;
+}
+
+.my-message {
+    border-radius: 15px;
+    background-color: rgba(57, 192, 237,.2);
+}
