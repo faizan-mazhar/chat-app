@@ -1,16 +1,28 @@
+import environ
 from pathlib import Path
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-1w(641(s4q__q(7mh8$=h738ij@o*1b-5*%1iu3&cmf!tkry$e'
+env = environ.Env(
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, None),
+    DATABASE_URL=(str, f'sqlite:////{BASE_DIR/"db.sqlite3"}'),
 
-DEBUG = True
+)
+
+# Take environment variables from .env file
+environ.Env.read_env(BASE_DIR/'.env')
+
+SECRET_KEY = env('SECRET_KEY')
+
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
-
+LOGOUT_REDIRECT_URL = reverse_lazy('login')
 # Application definition
 
 INSTALLED_APPS = [
@@ -71,12 +83,8 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db()
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

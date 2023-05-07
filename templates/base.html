@@ -17,7 +17,9 @@
        <p class="navbar-brand ms-3">{{user.get_username}}</p>
        {% endif %}
 
+       {% if user.is_authenticated %}
        <a class="btn btn-outline-dark me-3" href="{% url 'logout'%}" role="button">Logout</a>
+       {% endif %}
     </nav>
     {% block content %}
     {% endblock %}
