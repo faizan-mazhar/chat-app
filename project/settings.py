@@ -23,6 +23,7 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = []
 
 LOGOUT_REDIRECT_URL = reverse_lazy('login')
+
 # Application definition
 
 INSTALLED_APPS = [
