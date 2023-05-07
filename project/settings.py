@@ -22,7 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'room',
-    'authenticate'
+    'authenticate',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

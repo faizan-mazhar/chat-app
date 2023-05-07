@@ -58,7 +58,7 @@
   
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        const newMessageNode = createMessageElement(data.message, data.id, userId);
+        const newMessageNode = createMessageElement(data.message, data.user_id, userId);
   
         $("#chat-log").append(newMessageNode);
         $("#chat-log").animate({ scrollTop: $('#chat-log').prop("scrollHeight")}, 1000);

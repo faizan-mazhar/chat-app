@@ -1,8 +1,9 @@
 import json
 
 from channels.db import database_sync_to_async
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer, AsyncJsonWebsocketConsumer
 from room.models import ChatRoom, Message
+from room.api.v1.serializers import ClientMessageSerializer
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -38,7 +39,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
     async def chat_message(self, event):
-        print("event")
         message = event["message"]
         user_id = event["user_id"]
-        await self.send(text_data=json.dumps({"message": message, "id": user_id}))
+        await self.send(text_data=json.dumps({"message": message, "user_id": user_id}))
+
+
+class ChatConsumerAPI(AsyncJsonWebsocketConsumer):
+    
+    @database_sync_to_async
+    def get_room_object_refernce(self):
+        self.room = ChatRoom.objects.get(name=self.room_name)
+
+    @database_sync_to_async
+    def store_message(self, message, user_id):
+        Message.objects.create(room=self.room, message=message, sender=user_id)
+
+    async def connect(self):
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.sanatized_room_name = self.room_name.replace(" ", "_")
+        self.room_group_name = f"group_{self.sanatized_room_name}"
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.get_room_object_refernce() # get current room id to store message
+        await self.accept()
+    
+    async def receive_json(self, content, **kwargs):
+        '''
+        This will handle messages sent over the network from client
+        '''
+        serializer = ClientMessageSerializer(data=content)
+
+        if not serializer.is_valid():
+            return
+        
+        await self.store_message(serializer.data['message'], serializer.data['user_id'])
+
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "chat.message", "content": serializer.data}
+        )
+
+    async def chat_message(self, event):
+        await self.send_json(event["content"])
+
