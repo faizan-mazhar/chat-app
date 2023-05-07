@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -105,9 +106,10 @@ class APITestBase:
         self.client = APIClient()
         self.user_pass = "12345"
         self.user = User.objects.create_user(username="test", password=self.user_pass)
+        self.token, _ = Token.objects.get_or_create(user=self.user)
 
     def authenticate_client(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(user=self.user, token=self.token)
 
     def get_view_url(self):
         return reverse(self.view_path_name)
@@ -117,11 +119,11 @@ class APITestBase:
 
     def test_get_without_login(self):
         response = self.client.get(self.get_view_url())
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_get_with_login(self):
         self.authenticate_client()
-        response = self.client.get(self.get_view_url())
+        response = self.client.get(self.get_view_url(), {"Authorization": f"Token {self.token.key}"})
         reponse_data = self.get_test_data()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, reponse_data)
