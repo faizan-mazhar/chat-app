@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
+
 
 from project.utils import BaseTest
 from room.models import ChatRoom
@@ -45,3 +45,30 @@ class RoomViewTest(BaseTest, TestCase):
         '''
         pass
 
+
+    def test_chat_consumer(self):
+        @transaction.atomic
+        async def test_chat():
+            communicator = WebsocketCommunicator(ChatConsumer.as_asgi(), '/ws/chat/test/')
+            connected, _ = await communicator.connect(timeout=10)
+            self.assertTrue(connected)
+
+            data = {
+                'message': 'Testing',
+                'user_id': '3',
+            }
+            await communicator.send_json_to(data)
+
+            response = await communicator.receive_json_from()
+            self.assertEqual(response['message']['text'], 'Testing')
+            self.assertEqual(response['message']['user_name'], '3')
+
+            # chat_message = await sync_to_async(ChatMessage.objects.filter)(chat_room=self.chat_room, message=message,
+            #                                                                user=self.user)
+            # self.assertIsNotNone(chat_message)
+
+            await communicator.disconnect()
+
+        # Call async function from sync context
+        self.loop = asyncio.get_event_loop()
+        self.loop.run_until_complete(test_chat())
